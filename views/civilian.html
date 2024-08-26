@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Civilian {{userId}}</title>
+</head>
+<body data-userId="{{userId}}">
+
+    <h1>Hello Civilian {{userId}}</h1>
+
+    <h4 id="notification">
+
+    </h4>
+    
+    <div id="map">
+
+    </div>
+
+    <button onclick="requestForHelp()">Request for help</button>
+    
+<!-- Load socket.io client library -->
+<script src="/socket.io/socket.io.js"></script>
+
+<!-- Load Axios from a CDN -->
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+<script type="text/javascript">
+    const socket = io();
+
+    // Fetch userId from the data-atribute of the body tag
+    const userId = document.body.getAttribute("data-userId");
+
+    // Fire a 'join' event and send your userId to the server, to join a room - room-name will be the userId itself!
+    socket.emit("join", {userId: userId});
+
+    // Declare variables
+    let requestDetails = {};
+    let copDetails = {};
+    let map, marker;
+
+    requestDetails = {
+        civilianId: userId,
+        location: {
+           address: "Village Market, Nairobi, Kenya",
+            latitude: -1.2279854458585866,
+            longitude: 36.80492694951659
+        }
+    }
+
+    function requestForHelp(){
+        socket.emit('request-for-help', requestDetails);
+    }
+
+    socket.on("request-accepted", eventData => {
+        copDetails = eventData;
+
+        document.getElementById('notification').innerHTML = 
+            `${copDetails.displayName} is near ${copDetails.location.address} and will be arriving shortly.
+             You can reach them at their mobile ${copDetails.phone}`;
+    });
+
+</script>
+
+</body>
+</html>
